@@ -13,7 +13,7 @@ case $1 in
 	solana program deploy dist/swap_program/helloworld.so
 	;;
     "client")
-	(cd client/; cargo run ../dist/swap_program/helloworld-keypair.json)
+	(cd client/; timeout 5 cargo run ../dist/swap_program/helloworld-keypair.json)
 	;;
     "clean")
 	(cd swap_program/; cargo clean)

@@ -3,4 +3,8 @@
 rm -r dist/
 bash ./run.sh deploy
 
-bash ./run.sh client
+bash ./run.sh client &
+
+sleep 2
+bash swap.sh
+

@@ -6,10 +6,42 @@ use solana_program::{
     program_error::ProgramError,
     pubkey::Pubkey,
 };
+const TOKEN_PRICE: u64 = 10;
+
+/// ConstantPriceCurve struct implementing CurveCalculator
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct SwapToken {
+    /// 1 token SOL trade for Amount of token MOVE
+    pub token_price: u64,
+}
+
+/// Encodes all results of swapping from a source token to a destination token
+#[derive(Debug, PartialEq)]
+pub struct SwapWithoutFeesResult {
+    /// Amount of source token swapped
+    pub source_amount_swapped: u128,
+    /// Amount of destination token swapped
+    pub destination_amount_swapped: u128,
+}
+
+impl SwapToken {
+    fn swap_without_fees(&self, source_amount: u128) -> Option<SwapWithoutFeesResult> {
+        let token_b_price = self.token_price as u128;
+
+        let (source_amount_swapped, destination_amount_swapped) =
+            (source_amount, source_amount.checked_mul(token_b_price)?);
+        let source_amount_swapped = map_zero_to_none(source_amount_swapped)?;
+        let destination_amount_swapped = map_zero_to_none(destination_amount_swapped)?;
+        Some(SwapWithoutFeesResult {
+            source_amount_swapped,
+            destination_amount_swapped,
+        })
+    }
+}
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Deserialize, Serialize)]
 pub struct SwapInstruction {
-    pub amount: u32,
+    pub amount: u128,
 }
 
 /// The type of state managed by this swap_program. The type defined here
@@ -17,7 +49,7 @@ pub struct SwapInstruction {
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct GreetingAccount {
     /// The number of greetings that have been sent to this account.
-    pub counter: u32,
+    pub counter: u128,
 }
 
 /// Declare the programs entrypoint. The entrypoint is the function
@@ -48,12 +80,28 @@ pub fn process_instruction(
         return Err(ProgramError::IncorrectProgramId);
     }
 
-    let instruction = SwapInstruction::try_from_slice(instruction_data)?;
+    let swap = SwapInstruction::try_from_slice(instruction_data)?;
+
+    let swap_token = SwapToken {
+        token_price: TOKEN_PRICE,
+    };
+    let result = swap_token.swap_without_fees(swap.amount);
 
     // Deserialize the greeting information from the account, modify"
     // it, and then write it back.
     let mut greeting = GreetingAccount::try_from_slice(&account.data.borrow())?;
-    greeting.counter = instruction.amount;
+    greeting.counter = result
+        .ok_or(ProgramError::InvalidArgument)
+        .destination_amount_swapped;
     greeting.serialize(&mut &mut account.data.borrow_mut()[..])?;
     Ok(())
+}
+
+/// Helper function for mapping to SwapError::CalculationFailure
+pub fn map_zero_to_none(x: u128) -> Option<u128> {
+    if x == 0 {
+        None
+    } else {
+        Some(x)
+    }
 }

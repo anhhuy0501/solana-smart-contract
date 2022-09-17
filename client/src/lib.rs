@@ -1,6 +1,7 @@
 use thiserror::Error;
 
 pub mod client;
+pub mod handle_swap;
 pub mod server_builder;
 pub mod utils;
 

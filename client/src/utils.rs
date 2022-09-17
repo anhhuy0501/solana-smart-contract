@@ -1,16 +1,17 @@
 use crate::{Error, Result};
 use borsh::{BorshDeserialize, BorshSerialize};
+use helloworld::GreetingAccount;
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::signer::keypair::{read_keypair_file, Keypair};
 use yaml_rust::YamlLoader;
 
-/// The schema for greeting storage in greeting accounts. This is what
-/// is serialized into the account and updated when hellos are sent.
-#[derive(BorshSerialize, BorshDeserialize)]
-struct GreetingSchema {
-    counter: u32,
-    // counter2: u32,
-}
+// /// The schema for greeting storage in greeting accounts. This is what
+// /// is serialized into the account and updated when hellos are sent.
+// #[derive(BorshSerialize, BorshDeserialize)]
+// struct GreetingAccount {
+//     counter: u32,
+//     // counter2: u32,
+// }
 
 /// Parses and returns the Solana yaml config on the system.
 pub fn get_config() -> Result<yaml_rust::Yaml> {
@@ -85,7 +86,7 @@ pub fn get_greeting_public_key(player: &Pubkey, program: &Pubkey) -> Result<Pubk
 
 /// Determines and reports the size of greeting data.
 pub fn get_greeting_data_size() -> Result<usize> {
-    let encoded = GreetingSchema {
+    let encoded = GreetingAccount {
         counter: 0,
         // counter2: 0,
     }
@@ -96,7 +97,8 @@ pub fn get_greeting_data_size() -> Result<usize> {
 
 /// Deserializes a greeting account and reports the value of its
 /// greeting counter.
-pub fn get_greeting_count(data: &[u8]) -> Result<u32> {
-    let decoded = GreetingSchema::try_from_slice(data).map_err(|e| Error::SerializationError(e))?;
+pub fn get_greeting_count(data: &[u8]) -> Result<u128> {
+    let decoded =
+        GreetingAccount::try_from_slice(data).map_err(|e| Error::SerializationError(e))?;
     Ok(decoded.counter)
 }

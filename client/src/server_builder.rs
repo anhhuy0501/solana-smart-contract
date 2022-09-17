@@ -5,6 +5,7 @@ use std::convert::Infallible;
 use std::net::SocketAddr;
 use warp::http::{HeaderMap, Method};
 
+use crate::handle_swap::handle_swap;
 use helloworld::SwapInstruction;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::signature::Keypair;
@@ -15,9 +16,9 @@ use warp::{http::StatusCode, Filter, Rejection, Reply};
 pub const MAX_JSON_BODY_SIZE: u64 = 1024 * 1024;
 
 pub struct SwapContext {
-    player: Keypair,
-    program: Keypair,
-    connection: RpcClient,
+    pub(crate) player: Keypair,
+    pub(crate) program: Keypair,
+    pub(crate) connection: RpcClient,
 }
 
 impl SwapContext {
@@ -231,20 +232,4 @@ async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply, Inf
     };
 
     Ok(warp::reply::with_status(message, code))
-}
-
-async fn handle_swap(
-    context: Arc<SwapContext>,
-    instruct: SwapInstruction,
-) -> std::result::Result<impl Reply, Infallible> {
-    let player = &context.player;
-    let program = &context.program;
-    let connection = &context.connection;
-    crate::client::say_hello(&player, &program, &connection, instruct.amount).unwrap();
-    println!(
-        "({}) greetings have been sent.",
-        crate::client::count_greetings(&player, &program, &connection).unwrap()
-    );
-    let message = "Request swap received";
-    Ok(warp::reply::with_status(message, StatusCode::OK))
 }

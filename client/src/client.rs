@@ -145,19 +145,16 @@ pub fn create_greeting_account(
 /// previously generated greeting account. The swap_program will use that
 /// passed in address to update its greeting counter after verifying
 /// that it owns the account that we have passed in.
-pub fn say_hello(
+pub fn swap_token(
     player: &Keypair,
     program: &Keypair,
     connection: &RpcClient,
-    count: u32,
+    amount: u128,
 ) -> Result<()> {
     let greeting_pubkey = utils::get_greeting_public_key(&player.pubkey(), &program.pubkey())?;
 
-    // Submit an instruction to the chain which tells the swap_program to
-    // run. We pass the account that we want the results to be stored
-    // in as one of the accounts arguents which the swap_program will
-    // handle.
-    let instr = SwapInstruction { amount: count };
+    // Submit an instruction to the chain
+    let instr = SwapInstruction { amount };
 
     let mut instr_in_bytes: Vec<u8> = Vec::new();
     instr
@@ -180,7 +177,11 @@ pub fn say_hello(
 /// Pulls down the greeting account data and the value of its counter
 /// which ought to track how many times the `say_hello` method has
 /// been run.
-pub fn count_greetings(player: &Keypair, program: &Keypair, connection: &RpcClient) -> Result<u32> {
+pub fn count_greetings(
+    player: &Keypair,
+    program: &Keypair,
+    connection: &RpcClient,
+) -> Result<u128> {
     let greeting_pubkey = utils::get_greeting_public_key(&player.pubkey(), &program.pubkey())?;
     let greeting_account = connection.get_account(&greeting_pubkey)?;
     Ok(utils::get_greeting_count(&greeting_account.data)?)
