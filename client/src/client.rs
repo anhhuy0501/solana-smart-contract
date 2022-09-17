@@ -1,5 +1,7 @@
 use crate::utils;
 use crate::{Error, Result};
+use borsh::BorshSerialize;
+use helloworld::SwapInstruction;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::commitment_config::CommitmentConfig;
 use solana_sdk::instruction::{AccountMeta, Instruction};
@@ -65,7 +67,7 @@ pub fn request_airdrop(player: &Keypair, connection: &RpcClient, amount: u64) ->
 pub fn get_program(keypair_path: &str, connection: &RpcClient) -> Result<Keypair> {
     let program_keypair = read_keypair_file(keypair_path).map_err(|e| {
         Error::InvalidConfig(format!(
-            "failed to read program keypair file ({}): ({})",
+            "failed to read swap_program keypair file ({}): ({})",
             keypair_path, e
         ))
     })?;
@@ -73,7 +75,7 @@ pub fn get_program(keypair_path: &str, connection: &RpcClient) -> Result<Keypair
     let program_info = connection.get_account(&program_keypair.pubkey())?;
     if !program_info.executable {
         return Err(Error::InvalidConfig(format!(
-            "program with keypair ({}) is not executable",
+            "swap_program with keypair ({}) is not executable",
             keypair_path
         )));
     }
@@ -85,7 +87,7 @@ pub fn get_program(keypair_path: &str, connection: &RpcClient) -> Result<Keypair
 /// greeting counter smart contract we need some way to store the
 /// number of times we have said hello to the contract. To do this we
 /// create a greeting account which we subsequentally transfer
-/// ownership of to the program. This allows the program to write to
+/// ownership of to the swap_program. This allows the swap_program to write to
 /// that account as it deems fit.
 ///
 /// The greeting account has a [derived
@@ -107,11 +109,11 @@ pub fn create_greeting_account(
 
         // This instruction creates an account with the key
         // "greeting_pubkey". The created account is owned by the
-        // program. The account is loaded with enough lamports to stop
+        // swap_program. The account is loaded with enough lamports to stop
         // it from needing to pay rent. The lamports to fund this are
         // paid by the player.
         //
-        // It is important that the program owns the created account
+        // It is important that the swap_program owns the created account
         // because it needs to be able to modify its contents.
         //
         // The address of the account created by
@@ -140,20 +142,31 @@ pub fn create_greeting_account(
 
 /// Sends an instruction from PLAYER to PROGRAM via CONNECTION. The
 /// instruction contains no data but does contain the address of our
-/// previously generated greeting account. The program will use that
+/// previously generated greeting account. The swap_program will use that
 /// passed in address to update its greeting counter after verifying
 /// that it owns the account that we have passed in.
-pub fn say_hello(player: &Keypair, program: &Keypair, connection: &RpcClient) -> Result<()> {
+pub fn say_hello(
+    player: &Keypair,
+    program: &Keypair,
+    connection: &RpcClient,
+    count: u32,
+) -> Result<()> {
     let greeting_pubkey = utils::get_greeting_public_key(&player.pubkey(), &program.pubkey())?;
 
-    // Submit an instruction to the chain which tells the program to
+    // Submit an instruction to the chain which tells the swap_program to
     // run. We pass the account that we want the results to be stored
-    // in as one of the accounts arguents which the program will
+    // in as one of the accounts arguents which the swap_program will
     // handle.
+    let instr = SwapInstruction { count };
+
+    let mut instr_in_bytes: Vec<u8> = Vec::new();
+    instr
+        .serialize(&mut instr_in_bytes)
+        .map_err(|err| Error::CustomError("Cannot serialize".to_string()))?;
 
     let instruction = Instruction::new_with_bytes(
         program.pubkey(),
-        &[],
+        &instr_in_bytes,
         vec![AccountMeta::new(greeting_pubkey, false)],
     );
     let message = Message::new(&[instruction], Some(&player.pubkey()));

@@ -12,3 +12,4 @@ yaml-rust = "0.4"
 thiserror = "1"
 home = "0.5.3"
 borsh = "0.9.1"
+swap_program = {path= "../swap_program"}

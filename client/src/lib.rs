@@ -20,6 +20,9 @@ pub enum Error {
 
     #[error("error in public key derivation: ({0})")]
     KeyDerivationError(#[from] solana_sdk::pubkey::PubkeyError),
+
+    #[error("invalid config: ({0})")]
+    CustomError(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

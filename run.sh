@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function build_bpf() {
-    cargo build-bpf --manifest-path=program/Cargo.toml --bpf-out-dir=dist/program
+    cargo build-bpf --manifest-path=swap_program/Cargo.toml --bpf-out-dir=dist/swap_program
 }
 
 case $1 in
@@ -10,13 +10,13 @@ case $1 in
 	;;
     "deploy")
 	build_bpf
-	solana program deploy dist/program/helloworld.so
+	solana program deploy dist/swap_program/helloworld.so
 	;;
     "client")
-	(cd client/; cargo run ../dist/program/helloworld-keypair.json)
+	(cd client/; cargo run ../dist/swap_program/helloworld-keypair.json)
 	;;
     "clean")
-	(cd program/; cargo clean)
+	(cd swap_program/; cargo clean)
 	(cd client/; cargo clean)
 	rm -rf dist/
 	;;

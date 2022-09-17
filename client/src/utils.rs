@@ -9,6 +9,7 @@ use yaml_rust::YamlLoader;
 #[derive(BorshSerialize, BorshDeserialize)]
 struct GreetingSchema {
     counter: u32,
+    // counter2: u32,
 }
 
 /// Parses and returns the Solana yaml config on the system.
@@ -66,7 +67,7 @@ pub fn get_player() -> Result<Keypair> {
 }
 
 /// Gets the seed used to generate greeting accounts. If you'd like to
-/// force this program to generate a new greeting account and thus
+/// force this swap_program to generate a new greeting account and thus
 /// restart the counter you can change this value.
 pub fn get_greeting_seed() -> &'static str {
     "hello"
@@ -84,9 +85,12 @@ pub fn get_greeting_public_key(player: &Pubkey, program: &Pubkey) -> Result<Pubk
 
 /// Determines and reports the size of greeting data.
 pub fn get_greeting_data_size() -> Result<usize> {
-    let encoded = GreetingSchema { counter: 0 }
-        .try_to_vec()
-        .map_err(|e| Error::SerializationError(e))?;
+    let encoded = GreetingSchema {
+        counter: 0,
+        // counter2: 0,
+    }
+    .try_to_vec()
+    .map_err(|e| Error::SerializationError(e))?;
     Ok(encoded.len())
 }
 

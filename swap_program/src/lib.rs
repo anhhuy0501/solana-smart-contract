@@ -6,7 +6,12 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-/// The type of state managed by this program. The type defined here
+#[derive(BorshSerialize, BorshDeserialize, Debug)]
+pub struct SwapInstruction {
+    pub count: u32,
+}
+
+/// The type of state managed by this swap_program. The type defined here
 /// much match the `GreetingAccount` type defined by the client.
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct GreetingAccount {
@@ -15,16 +20,16 @@ pub struct GreetingAccount {
 }
 
 /// Declare the programs entrypoint. The entrypoint is the function
-/// that will get run when the program is executed.
+/// that will get run when the swap_program is executed.
 #[cfg(not(feature = "exclude_entrypoint"))]
 entrypoint!(process_instruction);
 
-/// Logic that runs when the program is executed. This program expects
-/// a single account that is owned by the program as an argument and
+/// Logic that runs when the swap_program is executed. This swap_program expects
+/// a single account that is owned by the swap_program as an argument and
 /// no instructions.
 ///
 /// The account passed in ought to contain a `GreetingAccount`. This
-/// program will increment the `counter` value in the
+/// swap_program will increment the `counter` value in the
 /// `GreetingAccount` when executed.
 pub fn process_instruction(
     program_id: &Pubkey,
@@ -35,17 +40,19 @@ pub fn process_instruction(
     let accounts_iter = &mut accounts.iter();
     let account = next_account_info(accounts_iter)?;
 
-    // The account must be owned by the program in order for the
-    // program to write to it. If that is not the case then the
-    // program has been invoked incorrectly and we report as much.
+    // The account must be owned by the swap_program in order for the
+    // swap_program to write to it. If that is not the case then the
+    // swap_program has been invoked incorrectly and we report as much.
     if account.owner != program_id {
         return Err(ProgramError::IncorrectProgramId);
     }
 
-    // Deserialize the greeting information from the account, modify
+    let instruction = SwapInstruction::try_from_slice(instruction_data)?;
+
+    // Deserialize the greeting information from the account, modify"
     // it, and then write it back.
     let mut greeting = GreetingAccount::try_from_slice(&account.data.borrow())?;
-    greeting.counter += 1;
+    greeting.counter = instruction.count;
     greeting.serialize(&mut &mut account.data.borrow_mut()[..])?;
     Ok(())
 }

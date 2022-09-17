@@ -4,7 +4,7 @@ fn main() {
     let args = std::env::args().collect::<Vec<_>>();
     if args.len() != 2 {
         eprintln!(
-            "usage: {} <path to solana hello world example program keypair>",
+            "usage: {} <path to solana hello world example swap_program keypair>",
             args[0]
         );
         std::process::exit(-1);
@@ -40,7 +40,7 @@ fn main() {
 
     zc::client::create_greeting_account(&player, &program, &connection).unwrap();
 
-    zc::client::say_hello(&player, &program, &connection).unwrap();
+    zc::client::say_hello(&player, &program, &connection, 123).unwrap();
     println!(
         "({}) greetings have been sent.",
         zc::client::count_greetings(&player, &program, &connection).unwrap()
