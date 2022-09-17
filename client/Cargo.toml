@@ -1,5 +1,5 @@
 [package]
-name = "zeke-contract"
+name = "swap_server"
 version = "0.1.0"
 edition = "2018"
 
@@ -13,3 +13,9 @@ thiserror = "1"
 home = "0.5.3"
 borsh = "0.9.1"
 swap_program = {path= "../swap_program"}
+logger = {path="../logger"}
+log = "0.4"
+anyhow = "1.0"
+warp = "0.3"
+tokio = "1.21"
+serde = "1.0"

@@ -157,7 +157,7 @@ pub fn say_hello(
     // run. We pass the account that we want the results to be stored
     // in as one of the accounts arguents which the swap_program will
     // handle.
-    let instr = SwapInstruction { count };
+    let instr = SwapInstruction { amount: count };
 
     let mut instr_in_bytes: Vec<u8> = Vec::new();
     instr

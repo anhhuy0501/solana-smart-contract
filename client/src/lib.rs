@@ -1,6 +1,7 @@
 use thiserror::Error;
 
 pub mod client;
+pub mod server_builder;
 pub mod utils;
 
 #[derive(Error, Debug)]

@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "swap_program",
-    "client"
+    "client",
+    "logger"
 ]

@@ -1,4 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use serde::{Deserialize, Serialize};
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint,
@@ -6,9 +7,9 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Deserialize, Serialize)]
 pub struct SwapInstruction {
-    pub count: u32,
+    pub amount: u32,
 }
 
 /// The type of state managed by this swap_program. The type defined here
@@ -52,7 +53,7 @@ pub fn process_instruction(
     // Deserialize the greeting information from the account, modify"
     // it, and then write it back.
     let mut greeting = GreetingAccount::try_from_slice(&account.data.borrow())?;
-    greeting.counter = instruction.count;
+    greeting.counter = instruction.amount;
     greeting.serialize(&mut &mut account.data.borrow_mut()[..])?;
     Ok(())
 }
