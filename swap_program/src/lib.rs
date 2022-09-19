@@ -76,6 +76,10 @@ pub fn process_instruction(
     // The account must be owned by the swap_program in order for the
     // swap_program to write to it. If that is not the case then the
     // swap_program has been invoked incorrectly and we report as much.
+
+    let source_info = next_account_info(account_info_iter)?;
+    let destination_info = next_account_info(account_info_iter)?;
+
     if account.owner != program_id {
         return Err(ProgramError::IncorrectProgramId);
     }
@@ -85,14 +89,17 @@ pub fn process_instruction(
     let swap_token = SwapToken {
         token_price: TOKEN_PRICE,
     };
-    let result = swap_token.swap_without_fees(swap.amount);
+    let result = swap_token
+        .swap_without_fees(swap.amount)
+        .ok_or(ProgramError::InvalidArgument)?;
+
+    **source_info.try_borrow_mut_lamports()? -= result.source_amount_swapped;
+    **destination_info.try_borrow_mut_lamports()? += result.source_amount_swapped;
 
     // Deserialize the greeting information from the account, modify"
     // it, and then write it back.
     let mut greeting = GreetingAccount::try_from_slice(&account.data.borrow())?;
-    greeting.counter = result
-        .ok_or(ProgramError::InvalidArgument)
-        .destination_amount_swapped;
+    greeting.counter = result.destination_amount_swapped;
     greeting.serialize(&mut &mut account.data.borrow_mut()[..])?;
     Ok(())
 }

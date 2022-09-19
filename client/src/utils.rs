@@ -86,12 +86,9 @@ pub fn get_greeting_public_key(player: &Pubkey, program: &Pubkey) -> Result<Pubk
 
 /// Determines and reports the size of greeting data.
 pub fn get_greeting_data_size() -> Result<usize> {
-    let encoded = GreetingAccount {
-        counter: 0,
-        // counter2: 0,
-    }
-    .try_to_vec()
-    .map_err(|e| Error::SerializationError(e))?;
+    let encoded = GreetingAccount { counter: 0 }
+        .try_to_vec()
+        .map_err(|e| Error::SerializationError(e))?;
     Ok(encoded.len())
 }
 

@@ -2,6 +2,7 @@
 
 # Init solana
 solana config set --url localhost
+# First acc
 solana-keygen new
 #Wrote new keypair to /home/huy/.config/solana/id.json
 #============================================================================
@@ -10,12 +11,24 @@ solana-keygen new
 #Save this seed phrase and your BIP39 passphrase to recover your new keypair:
 #panda number oil prepare merge loop limit mandate cabbage soup antenna crisp
 #============================================================================
+# Airdrop local acc
+solana airdrop 1000
+
+# Second acc
+solana-keygen new --no-outfile
+#==============================================================================
+#pubkey: 4dA8o8YkHahRMvELv7hDnHmbdZtN3CM3caFsR3VFLdYT
+#==============================================================================
+#Save this seed phrase and your BIP39 passphrase to recover your new keypair:
+#actual nose hotel frame offer excuse pattern garage portion tide detect damage
+#==============================================================================
+# Airdrop second acc
+solana airdrop 1000 4dA8o8YkHahRMvELv7hDnHmbdZtN3CM3caFsR3VFLdYT
 
 # Run solana local
 solana-test-validator
 
-# Airdrop local acc
-solana airdrop 1000
+
 
 # Deploy
 bash ./run.sh deploy
